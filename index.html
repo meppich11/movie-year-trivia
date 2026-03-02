@@ -509,6 +509,72 @@
     .text-center { text-align: center; }
     .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
 
+    /* TikTok Section */
+    .tiktok-section {
+      background: linear-gradient(135deg, #0d0f1e 0%, #111827 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 24px 18px 20px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .tiktok-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .tiktok-icon { flex-shrink: 0; }
+    .tiktok-sub {
+      font-size: 0.85rem;
+      color: var(--muted2);
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+    .tiktok-videos {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    @media (min-width: 900px) {
+      .tiktok-videos {
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+    }
+    .btn-tiktok {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #000;
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 12px 22px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-tiktok:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(255,255,255,0.1);
+    }
+
     /* ── SHOT LEGEND ── */
     .shot-legend {
       display: flex;
@@ -776,6 +842,38 @@
     <a class="btn-cta" href="https://www.rateandsee.com" target="_blank" rel="noopener">Join Rate&See — It's Free</a>
   </div>
 
+  <!-- TikTok Section -->
+  <div class="tiktok-section">
+    <div class="tiktok-header">
+      <svg class="tiktok-icon" viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.17 8.17 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/></svg>
+      <span>More from Rate&amp;See</span>
+    </div>
+    <p class="tiktok-sub">Watch us tear apart movie plots — then see if you can name the year 🎬</p>
+
+    <div class="tiktok-videos">
+      <blockquote class="tiktok-embed"
+        cite="https://www.tiktok.com/@rateandseemovies/video/7610977833384512798"
+        data-video-id="7610977833384512798"
+        style="max-width:325px; min-width:240px; border:none; padding:0; margin:0 auto;">
+      </blockquote>
+      <blockquote class="tiktok-embed"
+        cite="https://www.tiktok.com/@rateandseemovies/video/7453543759226129694"
+        data-video-id="7453543759226129694"
+        style="max-width:325px; min-width:240px; border:none; padding:0; margin:0 auto;">
+      </blockquote>
+      <blockquote class="tiktok-embed"
+        cite="https://www.tiktok.com/@rateandseemovies/video/7453572934934875422"
+        data-video-id="7453572934934875422"
+        style="max-width:325px; min-width:240px; border:none; padding:0; margin:0 auto;">
+      </blockquote>
+    </div>
+
+    <a class="btn-tiktok" href="https://www.tiktok.com/@rateandseemovies" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.17 8.17 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/></svg>
+      Follow @rateandseemovies
+    </a>
+  </div>
+
   <div class="text-center">
     <button class="btn" onclick="playAgain()">Play Again</button>
     <br/>
@@ -784,6 +882,8 @@
 </div>
 
 </div><!-- /wrapper -->
+
+<script async src="https://www.tiktok.com/embed.js"></script>
 
 <script>
 // ══════════════════════════════════════════════
