@@ -53,8 +53,8 @@
       position: fixed;
       inset: 0;
       background:
-        radial-gradient(ellipse 70% 60% at 50% 40%, rgba(100,40,160,0.18) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 40% at 50% 35%, rgba(232,66,78,0.10) 0%, transparent 60%);
+        radial-gradient(ellipse 80% 60% at 50% 10%, rgba(20,40,120,0.35) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 40% at 50% 35%, rgba(232,66,78,0.08) 0%, transparent 60%);
       pointer-events: none;
       z-index: 0;
     }
@@ -81,11 +81,11 @@
       font-size: 1.9rem;
       font-weight: 800;
       letter-spacing: 3px;
-      color: var(--coral);
+      color: var(--text);
       text-transform: uppercase;
       line-height: 1;
     }
-    .rs-wordmark span { color: var(--text); }
+    .rs-wordmark span { color: var(--coral); }
 
     /* ── GAME TITLE ── */
     .game-title {
@@ -145,14 +145,28 @@
       transition: all 0.2s;
       text-align: center;
       position: relative;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.4);
+      box-shadow: 0 0 0 1px rgba(201,168,76,0.08), 0 2px 16px rgba(0,0,0,0.4);
+      overflow: hidden;
     }
-    .era-card:hover { border-color: var(--coral); background: #13182e; box-shadow: 0 0 20px rgba(232,66,78,0.18); }
+    .era-card::before, .era-card::after {
+      content: '';
+      position: absolute;
+      width: 12px; height: 12px;
+      border-color: var(--gold);
+      border-style: solid;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+    }
+    .era-card::before { top: 6px; left: 6px; border-width: 1.5px 0 0 1.5px; border-radius: 2px 0 0 0; }
+    .era-card::after  { bottom: 6px; right: 6px; border-width: 0 1.5px 1.5px 0; border-radius: 0 0 2px 0; }
+    .era-card:hover { border-color: var(--coral); background: #13182e; box-shadow: 0 0 0 1px rgba(201,168,76,0.15), 0 0 20px rgba(232,66,78,0.18); }
+    .era-card:hover::before, .era-card:hover::after { opacity: 0.8; }
     .era-card.selected {
       border-color: var(--coral);
       background: #17182e;
-      box-shadow: 0 0 24px rgba(232,66,78,0.25), inset 0 0 12px rgba(232,66,78,0.06);
+      box-shadow: 0 0 0 1px rgba(201,168,76,0.2), 0 0 24px rgba(232,66,78,0.25), inset 0 0 12px rgba(232,66,78,0.06);
     }
+    .era-card.selected::before, .era-card.selected::after { opacity: 1; border-color: var(--coral); }
     .era-card.selected::after {
       content: '✓';
       position: absolute;
@@ -419,15 +433,16 @@
     .results-flames { font-size: 1.8rem; letter-spacing: 6px; margin-bottom: 8px; }
     .results-score {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 5rem;
+      font-size: 6.5rem;
       font-weight: 800;
       color: var(--coral);
       line-height: 1;
-      text-shadow: 0 0 40px rgba(232,66,78,0.5);
+      text-shadow: 0 0 60px rgba(232,66,78,0.55), 0 2px 0 rgba(0,0,0,0.4);
+      letter-spacing: -2px;
     }
     .results-score.negative { color: #f87171; text-shadow: 0 0 40px rgba(248,113,113,0.4); }
-    .results-max   { font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
-    .results-grade { font-size: 1.1rem; color: var(--text); margin-top: 8px; font-style: italic; }
+    .results-max   { font-size: 0.82rem; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.2px; }
+    .results-grade { font-size: 1.15rem; color: var(--gold-lt); margin-top: 10px; font-style: italic; font-weight: 600; letter-spacing: 0.3px; }
 
     .breakdown {
       background: var(--surface);
@@ -441,12 +456,13 @@
       display: grid;
       grid-template-columns: 1fr 56px 56px 70px;
       padding: 8px 14px;
-      background: var(--surface2);
+      background: linear-gradient(90deg, rgba(232,66,78,0.08) 0%, var(--surface2) 100%);
       color: var(--muted);
       font-size: 0.7rem;
       letter-spacing: 1.5px;
       text-transform: uppercase;
       border-bottom: 1px solid var(--border);
+      border-left: 3px solid var(--coral);
     }
     .breakdown-row {
       display: grid;
@@ -457,7 +473,7 @@
     }
     .breakdown-row:last-child { border-bottom: none; }
     .breakdown-row.called-row { background: rgba(232,66,78,0.04); }
-    .br-movie  { color: var(--muted2); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 8px; }
+    .br-movie  { color: var(--text); font-style: italic; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 8px; }
     .br-guess  { text-align: center; color: var(--muted); }
     .br-actual { text-align: center; color: var(--gold-lt); font-weight: 600; }
     .br-pts    { text-align: right; font-weight: 700; display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
@@ -491,11 +507,11 @@
       font-size: 1.3rem;
       font-weight: 800;
       letter-spacing: 3px;
-      color: var(--coral);
+      color: var(--text);
       text-transform: uppercase;
       margin-bottom: 8px;
     }
-    .cta-logo-line span { color: var(--text); }
+    .cta-logo-line span { color: var(--coral); }
     .cta-copy {
       font-size: 0.9rem;
       color: var(--muted2);
@@ -749,7 +765,7 @@
 <div id="screen-game" class="screen">
 
   <div class="rs-logo" style="margin-bottom:16px;">
-    <div class="rs-wordmark" style="font-size:1.2rem;">Rate<span>&</span>See</div>
+    <div class="rs-wordmark" style="font-size:1.2rem;">Rate<span>&amp;</span>See</div>
   </div>
 
   <div class="progress-wrap" id="progress-dots"></div>
@@ -807,9 +823,9 @@
 
   <div class="results-top">
     <div class="rs-logo" style="margin-bottom:12px;">
-      <div class="rs-wordmark" style="font-size:1.4rem;">Rate<span>&</span>See</div>
+      <div class="rs-wordmark" style="font-size:1.4rem;">Rate<span>&amp;</span>See</div>
     </div>
-    <div class="results-flames">🔥 🔥 🔥 🔥 🔥</div>
+    <div class="results-flames" id="results-flames">🔥 🔥 🔥 🔥 🔥</div>
     <div style="font-family:'Barlow Condensed',sans-serif; font-size:1.1rem; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-bottom:4px;">Your Score</div>
     <div class="results-score" id="final-score">0</div>
     <div class="results-max" id="results-max-label">out of 500 pts (standard) · up to 1,500 with called shots</div>
@@ -837,7 +853,7 @@
   <div style="margin-bottom:8px;"></div>
 
   <div class="cta-block">
-    <div class="cta-logo-line">Rate<span>&</span>See</div>
+    <div class="cta-logo-line">Rate<span>&amp;</span>See</div>
     <p class="cta-copy">Love movies? Join Rate&See to rate films, find people with matching tastes, and discover your next favorite watch — all in one place.</p>
     <a class="btn-cta" href="https://www.rateandsee.com" target="_blank" rel="noopener">Join Rate&See — It's Free</a>
   </div>
@@ -1401,6 +1417,14 @@ function showResults() {
                     : totalScore >= 0    ? 'weak'
                     : 'negative',
   });
+
+  // Dynamic flames based on score tier
+  const flamesEl = document.getElementById('results-flames');
+  if (flamesEl) {
+    const flameCt = totalScore >= 1000 ? 5 : totalScore >= 700 ? 4 : totalScore >= 400 ? 3 : totalScore >= 200 ? 2 : totalScore >= 0 ? 1 : 0;
+    flamesEl.textContent = flameCt > 0 ? ('🔥 '.repeat(flameCt)).trim() : '💀';
+    flamesEl.style.fontSize = flameCt === 5 ? '2rem' : '1.8rem';
+  }
 
   const scoreEl = document.getElementById('final-score');
   scoreEl.textContent = totalScore;
