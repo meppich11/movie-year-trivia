@@ -1433,6 +1433,16 @@ function showResults() {
 
   showScreen('screen-results');
   initShareButton();
+
+  // Re-trigger TikTok embeds (SPA fix — embed.js runs before results screen is visible)
+  (function() {
+    var existing = document.querySelector('script[src*="tiktok.com/embed"]');
+    if (existing) existing.remove();
+    var s = document.createElement('script');
+    s.src = 'https://www.tiktok.com/embed.js';
+    s.async = true;
+    document.body.appendChild(s);
+  })();
 }
 
 function playAgain() { startGame(); }
