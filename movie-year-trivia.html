@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>What Year Was That? | Rate&See</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #080c1a;
+      --surface:  #0d1225;
+      --surface2: #111830;
+      --border:   #1d2545;
+      --coral:    #e8424e;
+      --coral-lt: #f05060;
+      --coral-dk: #c43040;
+      --gold:     #c9a84c;
+      --gold-lt:  #e2c97a;
+      --text:     #e8eaf2;
+      --muted:    #6b7494;
+      --muted2:   #9aa0bc;
+    }
+
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 40%, rgba(100,40,160,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 50% 35%, rgba(232,66,78,0.10) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 640px;
+    }
+
+    .screen { display: none; animation: fadeUp 0.4s ease; }
+    .screen.active { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── LOGO ── */
+    .rs-logo { text-align: center; margin-bottom: 24px; }
+    .rs-wordmark {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.9rem;
+      font-weight: 800;
+      letter-spacing: 3px;
+      color: var(--coral);
+      text-transform: uppercase;
+      line-height: 1;
+    }
+    .rs-wordmark span { color: var(--text); }
+
+    /* ── GAME TITLE ── */
+    .game-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-align: center;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+    .game-subtitle {
+      text-align: center;
+      font-size: 0.95rem;
+      color: var(--muted2);
+      margin-bottom: 28px;
+    }
+
+    /* ── ORNATE CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      position: relative;
+      box-shadow:
+        0 0 0 1px rgba(201,168,76,0.12),
+        0 4px 32px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .card::before, .card::after {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      border-color: var(--gold);
+      border-style: solid;
+      opacity: 0.5;
+    }
+    .card::before { top: 8px; left: 8px; border-width: 2px 0 0 2px; border-radius: 3px 0 0 0; }
+    .card::after  { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; }
+
+    /* ── ERA GRID ── */
+    .era-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .era-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.4);
+    }
+    .era-card:hover { border-color: var(--coral); background: #13182e; box-shadow: 0 0 20px rgba(232,66,78,0.18); }
+    .era-card.selected {
+      border-color: var(--coral);
+      background: #17182e;
+      box-shadow: 0 0 24px rgba(232,66,78,0.25), inset 0 0 12px rgba(232,66,78,0.06);
+    }
+    .era-card.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 8px; right: 10px;
+      font-size: 0.75rem;
+      color: var(--coral);
+      font-weight: 700;
+    }
+    .era-icon { font-size: 1.7rem; margin-bottom: 6px; }
+    .era-name { font-weight: 700; font-size: 0.9rem; color: var(--text); }
+    .era-range { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--coral) 0%, var(--coral-dk) 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 13px 32px;
+      font-family: 'Barlow', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(232,66,78,0.35);
+    }
+    .btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--coral-lt) 0%, var(--coral) 100%);
+      box-shadow: 0 6px 20px rgba(232,66,78,0.5);
+      transform: translateY(-1px);
+    }
+    .btn:active:not(:disabled) { transform: translateY(0); }
+    .btn:disabled { opacity: 0.35; cursor: default; }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted2);
+      border: 1px solid var(--border);
+      box-shadow: none;
+      margin-top: 10px;
+    }
+    .btn-ghost:hover:not(:disabled) {
+      background: var(--surface2);
+      border-color: var(--muted);
+      color: var(--text);
+      box-shadow: none;
+    }
+
+    .btn-cta {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--coral) 0%, #a83040 100%);
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 15px 36px;
+      border-radius: 8px;
+      box-shadow: 0 6px 24px rgba(232,66,78,0.4);
+      text-decoration: none;
+      transition: all 0.2s;
+      font-family: 'Barlow', sans-serif;
+    }
+    .btn-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(232,66,78,0.55); }
+
+    /* ── CALL MY SHOT BUTTON ── */
+    .shot-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      background: transparent;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-family: 'Barlow', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--muted2);
+      cursor: pointer;
+      transition: all 0.25s;
+      letter-spacing: 0.3px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .shot-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(232,66,78,0.08) 0%, rgba(232,66,78,0.03) 100%);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .shot-btn:hover:not(:disabled) {
+      border-color: var(--coral);
+      color: var(--coral-lt);
+    }
+    .shot-btn:hover:not(:disabled)::before { opacity: 1; }
+
+    .shot-btn.called {
+      border-color: var(--coral);
+      background: linear-gradient(135deg, rgba(232,66,78,0.15) 0%, rgba(200,40,60,0.08) 100%);
+      color: var(--coral-lt);
+      box-shadow: 0 0 20px rgba(232,66,78,0.25), inset 0 0 10px rgba(232,66,78,0.06);
+    }
+    .shot-btn.called::before { opacity: 1; }
+    .shot-btn:disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+
+    .shot-icon { font-size: 1.2rem; transition: transform 0.2s; }
+    .shot-btn.called .shot-icon { transform: scale(1.2); }
+    .shot-text-main { font-weight: 800; font-size: 0.95rem; letter-spacing: 0.5px; }
+    .shot-text-sub  { font-size: 0.72rem; color: var(--muted); margin-top: 1px; font-weight: 400; }
+    .shot-content   { display: flex; flex-direction: column; align-items: flex-start; }
+
+    /* Called badge on movie card */
+    .called-badge {
+      display: none;
+      position: absolute;
+      top: -1px; right: -1px;
+      background: var(--coral);
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 0 10px 0 8px;
+    }
+    .called-badge.show { display: block; }
+
+    /* ── PROGRESS ── */
+    .progress-wrap { display: flex; gap: 6px; margin-bottom: 22px; }
+    .progress-dot { flex: 1; height: 5px; border-radius: 3px; background: var(--border); transition: background 0.3s; }
+    .progress-dot.done    { background: var(--coral); }
+    .progress-dot.current { background: rgba(232,66,78,0.45); }
+
+    /* ── SCORE STRIP ── */
+    .score-strip {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .score-strip strong { color: var(--coral); font-weight: 700; }
+
+    /* ── MOVIE CARD ── */
+    .movie-display {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px 24px;
+      text-align: center;
+      margin-bottom: 16px;
+      position: relative;
+      box-shadow: 0 0 0 1px rgba(201,168,76,0.1), 0 4px 32px rgba(0,0,0,0.5);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .movie-display::before, .movie-display::after {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      border-color: var(--gold);
+      border-style: solid;
+      opacity: 0.45;
+    }
+    .movie-display::before { top: 8px; left: 8px; border-width: 2px 0 0 2px; border-radius: 3px 0 0 0; }
+    .movie-display::after  { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; }
+    .movie-display.shot-active {
+      border-color: var(--coral);
+      box-shadow: 0 0 0 1px rgba(232,66,78,0.3), 0 0 28px rgba(232,66,78,0.18), 0 4px 32px rgba(0,0,0,0.5);
+    }
+
+    .movie-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .movie-title-text {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+      font-style: italic;
+    }
+    .flame-row {
+      margin-top: 14px;
+      font-size: 1.1rem;
+      color: var(--coral);
+      letter-spacing: 4px;
+      opacity: 0.5;
+    }
+
+    /* ── YEAR INPUT ── */
+    .input-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 16px; }
+    .year-input {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      padding: 10px 18px;
+      width: 150px;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      letter-spacing: 2px;
+    }
+    .year-input:focus { border-color: var(--coral); box-shadow: 0 0 0 3px rgba(232,66,78,0.15); }
+    .year-input.state-correct { border-color: #4ade80; color: #4ade80; }
+    .year-input.state-close   { border-color: #fb923c; color: #fb923c; }
+    .year-input.state-wrong   { border-color: #f87171; color: #f87171; }
+    .year-input.state-shot-win  { border-color: #f5c842; color: #f5c842; }
+    .year-input.state-shot-loss { border-color: #f87171; color: #f87171; }
+
+    /* ── FEEDBACK ── */
+    .feedback-box {
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      display: none;
+      text-align: center;
+    }
+    .feedback-box.show { display: block; }
+    .feedback-box.state-correct   { background: rgba(74,222,128,0.08);  border: 1px solid rgba(74,222,128,0.25); }
+    .feedback-box.state-close     { background: rgba(251,146,60,0.08);  border: 1px solid rgba(251,146,60,0.25); }
+    .feedback-box.state-wrong     { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.25); }
+    .feedback-box.state-shot-win  { background: rgba(245,200,66,0.10);  border: 1px solid rgba(245,200,66,0.4); box-shadow: 0 0 24px rgba(245,200,66,0.12); }
+    .feedback-box.state-shot-loss { background: rgba(248,113,113,0.10); border: 1px solid rgba(248,113,113,0.35); }
+
+    .fb-emoji  { font-size: 2rem; display: block; margin-bottom: 6px; }
+    .fb-label  { font-weight: 700; font-size: 1.05rem; }
+    .fb-pts    { font-size: 0.9rem; color: var(--muted2); margin-top: 3px; }
+    .fb-year   { font-size: 0.85rem; color: var(--muted2); margin-top: 5px; }
+    .fb-shot-tag {
+      display: inline-block;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+    }
+    .fb-shot-tag.win  { background: rgba(245,200,66,0.2); color: #f5c842; }
+    .fb-shot-tag.loss { background: rgba(248,113,113,0.2); color: #f87171; }
+
+    /* ── RESULTS ── */
+    .results-top { text-align: center; margin-bottom: 24px; }
+    .results-flames { font-size: 1.8rem; letter-spacing: 6px; margin-bottom: 8px; }
+    .results-score {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 5rem;
+      font-weight: 800;
+      color: var(--coral);
+      line-height: 1;
+      text-shadow: 0 0 40px rgba(232,66,78,0.5);
+    }
+    .results-score.negative { color: #f87171; text-shadow: 0 0 40px rgba(248,113,113,0.4); }
+    .results-max   { font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
+    .results-grade { font-size: 1.1rem; color: var(--text); margin-top: 8px; font-style: italic; }
+
+    .breakdown {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      font-size: 0.85rem;
+    }
+    .breakdown-head {
+      display: grid;
+      grid-template-columns: 1fr 56px 56px 70px;
+      padding: 8px 14px;
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 0.7rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    .breakdown-row {
+      display: grid;
+      grid-template-columns: 1fr 56px 56px 70px;
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+    }
+    .breakdown-row:last-child { border-bottom: none; }
+    .breakdown-row.called-row { background: rgba(232,66,78,0.04); }
+    .br-movie  { color: var(--muted2); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 8px; }
+    .br-guess  { text-align: center; color: var(--muted); }
+    .br-actual { text-align: center; color: var(--gold-lt); font-weight: 600; }
+    .br-pts    { text-align: right; font-weight: 700; display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+    .br-pts.p300 { color: #f5c842; }
+    .br-pts.p100 { color: #4ade80; }
+    .br-pts.p75  { color: #86efac; }
+    .br-pts.p50  { color: #fb923c; }
+    .br-pts.p25  { color: #fbbf24; }
+    .br-pts.p0   { color: #f87171; }
+    .br-pts.neg  { color: #f87171; }
+    .shot-pip {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--coral);
+      flex-shrink: 0;
+    }
+
+    /* ── CTA BLOCK ── */
+    .cta-block {
+      background: linear-gradient(135deg, #12152a 0%, #1a1030 100%);
+      border: 1px solid rgba(232,66,78,0.3);
+      border-radius: 12px;
+      padding: 24px 22px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 0 30px rgba(232,66,78,0.08);
+    }
+    .cta-logo-line {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: 3px;
+      color: var(--coral);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .cta-logo-line span { color: var(--text); }
+    .cta-copy {
+      font-size: 0.9rem;
+      color: var(--muted2);
+      line-height: 1.5;
+      margin-bottom: 18px;
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .text-center { text-align: center; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+    /* ── SHOT LEGEND ── */
+    .shot-legend {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .shot-legend .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--coral); display: inline-block; }
+
+    /* ── SHARE FEATURE (mobile only) ── */
+    @keyframes sharePulse {
+      0%, 100% { box-shadow: 0 0 24px rgba(232,66,78,0.10), 0 0 0 0   rgba(232,66,78,0.15); }
+      50%      { box-shadow: 0 0 38px rgba(232,66,78,0.22), 0 0 0 5px rgba(232,66,78,0); }
+    }
+    .share-card {
+      background: linear-gradient(135deg, rgba(232,66,78,0.07) 0%, rgba(100,40,160,0.05) 100%);
+      border: 1.5px solid rgba(232,66,78,0.32);
+      border-radius: 14px;
+      padding: 22px 24px;
+      text-align: center;
+      margin-bottom: 20px;
+      animation: sharePulse 3s ease-in-out infinite;
+      position: relative;
+      overflow: hidden;
+    }
+    .share-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 55% at 50% 50%, rgba(232,66,78,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .share-card-icon { font-size: 1.7rem; margin-bottom: 6px; }
+    .share-headline {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 5px;
+    }
+    .share-sub {
+      font-size: 0.8rem;
+      color: var(--muted2);
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+    .btn-share {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      background: linear-gradient(135deg, var(--coral) 0%, var(--coral-dk) 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 13px 28px;
+      font-family: 'Barlow', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(232,66,78,0.38);
+    }
+    .btn-share:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(232,66,78,0.55);
+    }
+    .btn-share:disabled { opacity: 0.55; cursor: default; transform: none; }
+
+    /* ── EXACT YEAR CELEBRATION ANIMATIONS ── */
+    @keyframes exactCardPulse {
+      0%   { box-shadow: 0 0 0 1px rgba(74,222,128,0.1), 0 4px 32px rgba(0,0,0,0.5); transform: scale(1); }
+      35%  { box-shadow: 0 0 0 4px rgba(74,222,128,0.65), 0 0 55px rgba(74,222,128,0.4), 0 4px 32px rgba(0,0,0,0.5); transform: scale(1.03); }
+      100% { box-shadow: 0 0 0 1px rgba(74,222,128,0.2), 0 4px 32px rgba(0,0,0,0.5); transform: scale(1); }
+    }
+    @keyframes shotWinCardPulse {
+      0%   { box-shadow: 0 0 0 1px rgba(245,200,66,0.2), 0 4px 32px rgba(0,0,0,0.5); transform: scale(1); }
+      25%  { box-shadow: 0 0 0 7px rgba(245,200,66,0.85), 0 0 90px rgba(245,200,66,0.55), 0 0 130px rgba(232,66,78,0.3), 0 4px 32px rgba(0,0,0,0.5); transform: scale(1.055); }
+      60%  { transform: scale(1.02); }
+      100% { box-shadow: 0 0 0 2px rgba(245,200,66,0.35), 0 0 35px rgba(245,200,66,0.18), 0 4px 32px rgba(0,0,0,0.5); transform: scale(1); }
+    }
+    @keyframes shotWinTitleShimmer {
+      0%   { color: #fff; text-shadow: none; }
+      30%  { color: #f5c842; text-shadow: 0 0 30px rgba(245,200,66,0.9), 0 0 70px rgba(245,200,66,0.5); }
+      100% { color: #fff; text-shadow: none; }
+    }
+    @keyframes shotWinScreenFlash {
+      0%   { opacity: 0; }
+      12%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    .movie-display.exact-hit {
+      animation: exactCardPulse 0.75s ease-out forwards;
+    }
+    .movie-display.shot-win-hit {
+      animation: shotWinCardPulse 0.95s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      border-color: var(--gold) !important;
+    }
+    .movie-display.shot-win-hit .movie-title-text {
+      animation: shotWinTitleShimmer 1.3s ease-out forwards;
+    }
+    .shot-win-flash {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 85% 65% at 50% 48%, rgba(245,200,66,0.32) 0%, rgba(232,66,78,0.14) 55%, transparent 75%);
+      pointer-events: none;
+      z-index: 9998;
+      animation: shotWinScreenFlash 0.9s ease-out forwards;
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+<!-- ══════════════ WELCOME ══════════════ -->
+<div id="screen-welcome" class="screen active">
+  <div class="rs-logo">
+    <div class="rs-logo-icon" style="margin-bottom:6px;">
+      <svg width="54" height="48" viewBox="0 0 54 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="14" width="46" height="32" rx="5" fill="#e8424e"/>
+        <rect x="10" y="19" width="34" height="22" rx="3" fill="#080c1a"/>
+        <line x1="18" y1="14" x2="10" y2="2" stroke="#e8424e" stroke-width="3" stroke-linecap="round"/>
+        <line x1="36" y1="14" x2="44" y2="2" stroke="#e8424e" stroke-width="3" stroke-linecap="round"/>
+        <path d="M27 36 C24 33 22 30 24 27 C24 27 25 29 27 29 C27 26 29 23 29 20 C31 23 33 27 31 31 C33 29 33 26 32 24 C34 27 35 31 33 34 C32 36 30 37 27 36Z" fill="#e8424e" opacity="0.9"/>
+      </svg>
+    </div>
+    <div class="rs-wordmark">Rate<span>&</span>See</div>
+  </div>
+
+  <div class="game-title">What Year Was That?</div>
+  <p class="game-subtitle">Test your movie release year knowledge — can you nail the decade?</p>
+
+  <p style="font-size:0.8rem; color:var(--muted); text-align:center; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:14px;">Choose your era</p>
+
+  <div class="era-grid">
+    <div class="era-card" data-era="all" onclick="selectEra(this)">
+      <div class="era-icon">🌍</div>
+      <div class="era-name">The Full Span</div>
+      <div class="era-range">1975 – Today</div>
+    </div>
+    <div class="era-card" data-era="early" onclick="selectEra(this)">
+      <div class="era-icon">📼</div>
+      <div class="era-name">VHS Era</div>
+      <div class="era-range">1975 – 1990</div>
+    </div>
+    <div class="era-card" data-era="mid" onclick="selectEra(this)">
+      <div class="era-icon">💿</div>
+      <div class="era-name">DVD Era</div>
+      <div class="era-range">1990 – 2010</div>
+    </div>
+    <div class="era-card" data-era="modern" onclick="selectEra(this)">
+      <div class="era-icon">📡</div>
+      <div class="era-name">Streaming Era</div>
+      <div class="era-range">2000 – Today</div>
+    </div>
+  </div>
+
+  <div class="text-center">
+    <button class="btn" id="start-btn" onclick="startGame()" disabled>Start Game →</button>
+    <p style="font-size:0.75rem; color:var(--muted); margin-top:14px;">5 questions · type the year · 🔥 call your shot for triple points</p>
+  </div>
+</div>
+
+<!-- ══════════════ GAME ══════════════ -->
+<div id="screen-game" class="screen">
+
+  <div class="rs-logo" style="margin-bottom:16px;">
+    <div class="rs-wordmark" style="font-size:1.2rem;">Rate<span>&</span>See</div>
+  </div>
+
+  <div class="progress-wrap" id="progress-dots"></div>
+
+  <div class="score-strip">
+    <div>Question <strong id="q-num">1</strong> / 5</div>
+    <div>Score: <strong id="current-score">0</strong></div>
+  </div>
+
+  <!-- Movie card -->
+  <div class="movie-display" id="movie-display">
+    <div class="called-badge" id="called-badge">🔥 Shot Called</div>
+    <div class="movie-label">🎬 What year was this released?</div>
+    <div class="movie-title-text" id="movie-title">—</div>
+    <div class="flame-row">🔥 🔥 🔥 🔥 🔥</div>
+  </div>
+
+  <!-- Call My Shot button -->
+  <button class="shot-btn" id="shot-btn" onclick="toggleShot()">
+    <span class="shot-icon" id="shot-icon">🎯</span>
+    <span class="shot-content">
+      <span class="shot-text-main" id="shot-text-main">Call My Shot</span>
+      <span class="shot-text-sub" id="shot-text-sub">Confident? Triple your points — or lose 100 if you're wrong.</span>
+    </span>
+  </button>
+
+  <!-- Year input -->
+  <div class="input-row">
+    <input
+      type="number"
+      class="year-input"
+      id="year-input"
+      placeholder="19??"
+      min="1975" max="2025"
+    />
+    <button class="btn" id="submit-btn" onclick="submitGuess()">Check</button>
+  </div>
+
+  <!-- Feedback -->
+  <div class="feedback-box" id="feedback-box">
+    <span class="fb-shot-tag" id="fb-shot-tag" style="display:none;"></span>
+    <span class="fb-emoji" id="fb-emoji"></span>
+    <div class="fb-label" id="fb-label"></div>
+    <div class="fb-pts"   id="fb-pts"></div>
+    <div class="fb-year"  id="fb-year"></div>
+  </div>
+
+  <div class="text-center">
+    <button class="btn" id="next-btn" onclick="nextQuestion()" style="display:none;">Next →</button>
+  </div>
+</div>
+
+<!-- ══════════════ RESULTS ══════════════ -->
+<div id="screen-results" class="screen">
+
+  <div class="results-top">
+    <div class="rs-logo" style="margin-bottom:12px;">
+      <div class="rs-wordmark" style="font-size:1.4rem;">Rate<span>&</span>See</div>
+    </div>
+    <div class="results-flames">🔥 🔥 🔥 🔥 🔥</div>
+    <div style="font-family:'Barlow Condensed',sans-serif; font-size:1.1rem; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-bottom:4px;">Your Score</div>
+    <div class="results-score" id="final-score">0</div>
+    <div class="results-max" id="results-max-label">out of 500 pts (standard) · up to 1,500 with called shots</div>
+    <div class="results-grade" id="final-grade"></div>
+  </div>
+
+  <div class="breakdown" id="results-breakdown"></div>
+
+  <div class="shot-legend">
+    <span class="pip"></span> = Called Shot
+  </div>
+
+  <!-- Share section — mobile only, shown by JS -->
+  <div id="share-section" style="display:none;">
+    <div class="share-card">
+      <div class="share-card-icon">📲</div>
+      <div class="share-headline">Challenge a Friend</div>
+      <p class="share-sub">We'll generate a trash-talk message + your score card.<br>They'll have no choice but to try.</p>
+      <button class="btn-share" id="share-btn" onclick="shareScore()">
+        Send Score via Text →
+      </button>
+    </div>
+  </div>
+
+  <div style="margin-bottom:8px;"></div>
+
+  <div class="cta-block">
+    <div class="cta-logo-line">Rate<span>&</span>See</div>
+    <p class="cta-copy">Love movies? Join Rate&See to rate films, find people with matching tastes, and discover your next favorite watch — all in one place.</p>
+    <a class="btn-cta" href="https://www.rateandsee.com" target="_blank" rel="noopener">Join Rate&See — It's Free</a>
+  </div>
+
+  <div class="text-center">
+    <button class="btn" onclick="playAgain()">Play Again</button>
+    <br/>
+    <button class="btn btn-ghost" onclick="goHome()">Change Era</button>
+  </div>
+</div>
+
+</div><!-- /wrapper -->
+
+<script>
+// ══════════════════════════════════════════════
+//  MOVIE DATABASE  (~200 films)
+// ══════════════════════════════════════════════
+const ALL_MOVIES = [
+  // ── 1975–1989 ──
+  { title: "Jaws",                                year: 1975 },
+  { title: "One Flew Over the Cuckoo's Nest",     year: 1975 },
+  { title: "Rocky",                               year: 1976 },
+  { title: "Network",                             year: 1976 },
+  { title: "Star Wars",                           year: 1977 },
+  { title: "Annie Hall",                          year: 1977 },
+  { title: "Close Encounters of the Third Kind",  year: 1977 },
+  { title: "Saturday Night Fever",                year: 1977 },
+  { title: "Grease",                              year: 1978 },
+  { title: "The Deer Hunter",                     year: 1978 },
+  { title: "Alien",                               year: 1979 },
+  { title: "Apocalypse Now",                      year: 1979 },
+  { title: "Kramer vs. Kramer",                   year: 1979 },
+  { title: "The Empire Strikes Back",             year: 1980 },
+  { title: "Raging Bull",                         year: 1980 },
+  { title: "Ordinary People",                     year: 1980 },
+  { title: "Raiders of the Lost Ark",             year: 1981 },
+  { title: "An Officer and a Gentleman",          year: 1982 },
+  { title: "E.T. the Extra-Terrestrial",          year: 1982 },
+  { title: "Tootsie",                             year: 1982 },
+  { title: "Return of the Jedi",                  year: 1983 },
+  { title: "Scarface",                            year: 1983 },
+  { title: "Flashdance",                          year: 1983 },
+  { title: "Ghostbusters",                        year: 1984 },
+  { title: "The Terminator",                      year: 1984 },
+  { title: "Amadeus",                             year: 1984 },
+  { title: "Footloose",                           year: 1984 },
+  { title: "Beverly Hills Cop",                   year: 1984 },
+  { title: "Back to the Future",                  year: 1985 },
+  { title: "The Breakfast Club",                  year: 1985 },
+  { title: "The Color Purple",                    year: 1985 },
+  { title: "Top Gun",                             year: 1986 },
+  { title: "Ferris Bueller's Day Off",            year: 1986 },
+  { title: "Stand By Me",                         year: 1986 },
+  { title: "Crocodile Dundee",                    year: 1986 },
+  { title: "Platoon",                             year: 1986 },
+  { title: "Predator",                            year: 1987 },
+  { title: "Fatal Attraction",                    year: 1987 },
+  { title: "Dirty Dancing",                       year: 1987 },
+  { title: "Full Metal Jacket",                   year: 1987 },
+  { title: "RoboCop",                             year: 1987 },
+  { title: "Die Hard",                            year: 1988 },
+  { title: "Rain Man",                            year: 1988 },
+  { title: "Beetlejuice",                         year: 1988 },
+  { title: "Coming to America",                   year: 1988 },
+  { title: "Who Framed Roger Rabbit",             year: 1988 },
+  { title: "Batman",                              year: 1989 },
+  { title: "Indiana Jones and the Last Crusade",  year: 1989 },
+  { title: "Dead Poets Society",                  year: 1989 },
+  { title: "When Harry Met Sally",                year: 1989 },
+  { title: "Field of Dreams",                     year: 1989 },
+  { title: "Steel Magnolias",                     year: 1989 },
+
+  // ── 1990–1999 ──
+  { title: "Home Alone",                          year: 1990 },
+  { title: "Pretty Woman",                        year: 1990 },
+  { title: "Dances with Wolves",                  year: 1990 },
+  { title: "Misery",                              year: 1990 },
+  { title: "The Silence of the Lambs",            year: 1991 },
+  { title: "Terminator 2: Judgment Day",          year: 1991 },
+  { title: "Thelma & Louise",                     year: 1991 },
+  { title: "Beauty and the Beast",                year: 1991 },
+  { title: "Wayne's World",                       year: 1992 },
+  { title: "A Few Good Men",                      year: 1992 },
+  { title: "Aladdin",                             year: 1992 },
+  { title: "The Bodyguard",                       year: 1992 },
+  { title: "Unforgiven",                          year: 1992 },
+  { title: "Jurassic Park",                       year: 1993 },
+  { title: "Schindler's List",                    year: 1993 },
+  { title: "Mrs. Doubtfire",                      year: 1993 },
+  { title: "Philadelphia",                        year: 1993 },
+  { title: "The Lion King",                       year: 1994 },
+  { title: "Pulp Fiction",                        year: 1994 },
+  { title: "Forrest Gump",                        year: 1994 },
+  { title: "The Shawshank Redemption",            year: 1994 },
+  { title: "Speed",                               year: 1994 },
+  { title: "Dumb and Dumber",                     year: 1994 },
+  { title: "Toy Story",                           year: 1995 },
+  { title: "Braveheart",                          year: 1995 },
+  { title: "Apollo 13",                           year: 1995 },
+  { title: "Se7en",                               year: 1995 },
+  { title: "Clueless",                            year: 1995 },
+  { title: "Independence Day",                    year: 1996 },
+  { title: "Jerry Maguire",                       year: 1996 },
+  { title: "Fargo",                               year: 1996 },
+  { title: "Scream",                              year: 1996 },
+  { title: "Titanic",                             year: 1997 },
+  { title: "Good Will Hunting",                   year: 1997 },
+  { title: "Men in Black",                        year: 1997 },
+  { title: "As Good as It Gets",                  year: 1997 },
+  { title: "L.A. Confidential",                   year: 1997 },
+  { title: "Saving Private Ryan",                 year: 1998 },
+  { title: "There's Something About Mary",        year: 1998 },
+  { title: "Armageddon",                          year: 1998 },
+  { title: "Shakespeare in Love",                 year: 1998 },
+  { title: "The Matrix",                          year: 1999 },
+  { title: "American Beauty",                     year: 1999 },
+  { title: "The Sixth Sense",                     year: 1999 },
+  { title: "Fight Club",                          year: 1999 },
+  { title: "American Pie",                        year: 1999 },
+
+  // ── 2000–2009 ──
+  { title: "Gladiator",                           year: 2000 },
+  { title: "Cast Away",                           year: 2000 },
+  { title: "Memento",                             year: 2000 },
+  { title: "Erin Brockovich",                     year: 2000 },
+  { title: "Shrek",                               year: 2001 },
+  { title: "Ocean's Eleven",                      year: 2001 },
+  { title: "A Beautiful Mind",                    year: 2001 },
+  { title: "Monsters, Inc.",                      year: 2001 },
+  { title: "The Lord of the Rings: The Fellowship of the Ring", year: 2001 },
+  { title: "Spider-Man",                          year: 2002 },
+  { title: "Chicago",                             year: 2002 },
+  { title: "Catch Me If You Can",                 year: 2002 },
+  { title: "Finding Nemo",                        year: 2003 },
+  { title: "Pirates of the Caribbean: The Curse of the Black Pearl", year: 2003 },
+  { title: "The Lord of the Rings: The Return of the King", year: 2003 },
+  { title: "Lost in Translation",                 year: 2003 },
+  { title: "The Incredibles",                     year: 2004 },
+  { title: "Eternal Sunshine of the Spotless Mind", year: 2004 },
+  { title: "Million Dollar Baby",                 year: 2004 },
+  { title: "Sideways",                            year: 2004 },
+  { title: "Batman Begins",                       year: 2005 },
+  { title: "Walk the Line",                       year: 2005 },
+  { title: "Crash",                               year: 2005 },
+  { title: "Brokeback Mountain",                  year: 2005 },
+  { title: "Borat",                               year: 2006 },
+  { title: "The Devil Wears Prada",               year: 2006 },
+  { title: "The Departed",                        year: 2006 },
+  { title: "Little Miss Sunshine",                year: 2006 },
+  { title: "Ratatouille",                         year: 2007 },
+  { title: "No Country for Old Men",              year: 2007 },
+  { title: "Juno",                                year: 2007 },
+  { title: "There Will Be Blood",                 year: 2007 },
+  { title: "The Dark Knight",                     year: 2008 },
+  { title: "WALL-E",                              year: 2008 },
+  { title: "Slumdog Millionaire",                 year: 2008 },
+  { title: "Gran Torino",                         year: 2008 },
+  { title: "Avatar",                              year: 2009 },
+  { title: "The Hangover",                        year: 2009 },
+  { title: "Up",                                  year: 2009 },
+  { title: "Inglourious Basterds",                year: 2009 },
+  { title: "District 9",                          year: 2009 },
+  { title: "The Hurt Locker",                     year: 2009 },
+
+  // ── 2010–2019 ──
+  { title: "Inception",                           year: 2010 },
+  { title: "Toy Story 3",                         year: 2010 },
+  { title: "The Social Network",                  year: 2010 },
+  { title: "The King's Speech",                   year: 2010 },
+  { title: "Black Swan",                          year: 2010 },
+  { title: "Harry Potter and the Deathly Hallows – Part 2", year: 2011 },
+  { title: "Midnight in Paris",                   year: 2011 },
+  { title: "The Help",                            year: 2011 },
+  { title: "Moneyball",                           year: 2011 },
+  { title: "The Avengers",                        year: 2012 },
+  { title: "Django Unchained",                    year: 2012 },
+  { title: "Lincoln",                             year: 2012 },
+  { title: "Les Misérables",                      year: 2012 },
+  { title: "Gravity",                             year: 2013 },
+  { title: "Frozen",                              year: 2013 },
+  { title: "The Wolf of Wall Street",             year: 2013 },
+  { title: "Her",                                 year: 2013 },
+  { title: "12 Years a Slave",                    year: 2013 },
+  { title: "Interstellar",                        year: 2014 },
+  { title: "Guardians of the Galaxy",             year: 2014 },
+  { title: "The Grand Budapest Hotel",            year: 2014 },
+  { title: "Boyhood",                             year: 2014 },
+  { title: "Mad Max: Fury Road",                  year: 2015 },
+  { title: "The Revenant",                        year: 2015 },
+  { title: "Spotlight",                           year: 2015 },
+  { title: "The Martian",                         year: 2015 },
+  { title: "The Big Short",                       year: 2015 },
+  { title: "La La Land",                          year: 2016 },
+  { title: "Deadpool",                            year: 2016 },
+  { title: "Arrival",                             year: 2016 },
+  { title: "Hidden Figures",                      year: 2016 },
+  { title: "Get Out",                             year: 2017 },
+  { title: "Wonder Woman",                        year: 2017 },
+  { title: "Three Billboards Outside Ebbing, Missouri", year: 2017 },
+  { title: "The Shape of Water",                  year: 2017 },
+  { title: "Call Me by Your Name",                year: 2017 },
+  { title: "Black Panther",                       year: 2018 },
+  { title: "Avengers: Infinity War",              year: 2018 },
+  { title: "A Star Is Born",                      year: 2018 },
+  { title: "Bohemian Rhapsody",                   year: 2018 },
+  { title: "Roma",                                year: 2018 },
+  { title: "Spider-Man: Into the Spider-Verse",   year: 2018 },
+  { title: "Joker",                               year: 2019 },
+  { title: "Parasite",                            year: 2019 },
+  { title: "Avengers: Endgame",                   year: 2019 },
+  { title: "Once Upon a Time in Hollywood",       year: 2019 },
+  { title: "1917",                                year: 2019 },
+  { title: "Marriage Story",                      year: 2019 },
+  { title: "Knives Out",                          year: 2019 },
+  { title: "Ford v Ferrari",                      year: 2019 },
+
+  // ── 2020–2024 ──
+  { title: "Tenet",                               year: 2020 },
+  { title: "Soul",                                year: 2020 },
+  { title: "Minari",                              year: 2020 },
+  { title: "The Trial of the Chicago 7",          year: 2020 },
+  { title: "No Time to Die",                      year: 2021 },
+  { title: "Dune",                                year: 2021 },
+  { title: "The Power of the Dog",                year: 2021 },
+  { title: "CODA",                                year: 2021 },
+  { title: "Belfast",                             year: 2021 },
+  { title: "Top Gun: Maverick",                   year: 2022 },
+  { title: "Everything Everywhere All at Once",   year: 2022 },
+  { title: "The Batman",                          year: 2022 },
+  { title: "Tár",                                 year: 2022 },
+  { title: "Women Talking",                       year: 2022 },
+  { title: "Oppenheimer",                         year: 2023 },
+  { title: "Barbie",                              year: 2023 },
+  { title: "Killers of the Flower Moon",          year: 2023 },
+  { title: "Poor Things",                         year: 2023 },
+  { title: "Past Lives",                          year: 2023 },
+  { title: "American Fiction",                    year: 2023 },
+  { title: "Dune: Part Two",                      year: 2024 },
+  { title: "Inside Out 2",                        year: 2024 },
+  { title: "Deadpool & Wolverine",                year: 2024 },
+  { title: "Conclave",                            year: 2024 },
+  { title: "The Brutalist",                       year: 2024 },
+];
+
+const ERA_RANGES = {
+  all:    { min: 1975, max: 2024 },
+  early:  { min: 1975, max: 1990 },
+  mid:    { min: 1990, max: 2010 },
+  modern: { min: 2000, max: 2024 },
+};
+
+// ── STATE ──
+let selectedEra = null;
+let questions   = [];
+let currentQ    = 0;
+let totalScore  = 0;
+let history     = [];
+let answered    = false;
+let calledShot  = false;
+
+// ── SCORING ──
+function calcPoints(diff, shotCalled) {
+  if (shotCalled) {
+    if (diff === 0) return 300;   // 3x — nailed it
+    if (diff <= 2)  return -50;   // close but no cigar
+    return -100;                  // way off — really hurts
+  }
+  if (diff === 0) return 100;
+  if (diff === 1) return 75;
+  if (diff === 2) return 50;
+  if (diff <= 5)  return 25;
+  return 0;
+}
+
+function getFeedback(diff, shotCalled) {
+  if (shotCalled) {
+    if (diff === 0) return { emoji: "🔥🔥🔥", label: "CALLED IT! Perfect year!", state: "state-shot-win", shotTag: { text: "🔥 Shot Called — Triple Points!", cls: "win" } };
+    if (diff <= 2)  return { emoji: "💀", label: `Shot missed — ${diff} year${diff>1?'s':''} off.`, state: "state-shot-loss", shotTag: { text: "Shot Called & Missed", cls: "loss" } };
+    return          { emoji: "💀", label: `Shot missed — ${diff} years off!`, state: "state-shot-loss", shotTag: { text: "Shot Called & Missed", cls: "loss" } };
+  }
+  if (diff === 0) return { emoji: "🎯", label: "Bullseye! Exactly right!", state: "state-correct",  shotTag: null };
+  if (diff === 1) return { emoji: "🔥", label: "So close — just one year off!", state: "state-close", shotTag: null };
+  if (diff === 2) return { emoji: "👍", label: "Pretty good — two years off.", state: "state-close",  shotTag: null };
+  if (diff <= 5)  return { emoji: "🤔", label: `Getting warm — ${diff} years off.`, state: "state-wrong", shotTag: null };
+  return          { emoji: "❌", label: `Way off — ${diff} years away!`, state: "state-wrong",  shotTag: null };
+}
+
+function gradeText(s) {
+  if (s >= 1200) return "🌟 Legendary. You should be writing IMDb entries.";
+  if (s >= 800)  return "🔥 Elite. You called your shots and delivered.";
+  if (s === 500) return "🎬 Perfect standard score. Now try calling shots!";
+  if (s >= 375)  return "🍿 Really solid — you know your cinema.";
+  if (s >= 250)  return "🎞️ Good effort — a few surprised you though!";
+  if (s >= 100)  return "🎟️ Room to grow — more rewatches needed!";
+  if (s >= 0)    return "📽️ Time for a movie marathon to sharpen those skills!";
+  return "☠️ You called your shots… and missed every one. Bold strategy.";
+}
+
+// ── UI HELPERS ──
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ── ERA SELECTION ──
+function selectEra(card) {
+  document.querySelectorAll('.era-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedEra = card.dataset.era;
+  document.getElementById('start-btn').disabled = false;
+}
+
+// ── GAME FLOW ──
+function startGame() {
+  const range = ERA_RANGES[selectedEra];
+  const pool  = ALL_MOVIES.filter(m => m.year >= range.min && m.year <= range.max);
+  questions   = shuffle(pool).slice(0, 5);
+  currentQ    = 0;
+  totalScore  = 0;
+  history     = [];
+  answered    = false;
+  calledShot  = false;
+  buildDots();
+  showScreen('screen-game');
+  renderQuestion();
+}
+
+function buildDots() {
+  const wrap = document.getElementById('progress-dots');
+  wrap.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const d = document.createElement('div');
+    d.className = 'progress-dot' + (i === 0 ? ' current' : '');
+    d.id = `dot-${i}`;
+    wrap.appendChild(d);
+  }
+}
+
+function updateDots() {
+  for (let i = 0; i < 5; i++) {
+    const d = document.getElementById(`dot-${i}`);
+    d.className = 'progress-dot';
+    if (i < currentQ) d.classList.add('done');
+    else if (i === currentQ) d.classList.add('current');
+  }
+}
+
+function renderQuestion() {
+  answered   = false;
+  calledShot = false;
+
+  const movie = questions[currentQ];
+  document.getElementById('q-num').textContent         = currentQ + 1;
+  document.getElementById('current-score').textContent  = totalScore;
+  document.getElementById('movie-title').textContent    = movie.title;
+
+  // Reset movie display
+  const display = document.getElementById('movie-display');
+  display.classList.remove('shot-active', 'exact-hit', 'shot-win-hit');
+  document.getElementById('called-badge').classList.remove('show');
+
+  // Reset shot button
+  const shotBtn = document.getElementById('shot-btn');
+  shotBtn.className = 'shot-btn';
+  shotBtn.disabled  = false;
+  document.getElementById('shot-icon').textContent      = '🎯';
+  document.getElementById('shot-text-main').textContent = 'Call My Shot';
+  document.getElementById('shot-text-sub').textContent  = 'Confident? Triple your points — or lose 100 if you\'re wrong.';
+
+  // Reset input
+  const inp = document.getElementById('year-input');
+  inp.value     = '';
+  inp.className = 'year-input';
+  inp.disabled  = false;
+  inp.focus();
+
+  // Reset feedback & buttons
+  document.getElementById('feedback-box').className = 'feedback-box';
+  document.getElementById('fb-shot-tag').style.display = 'none';
+  document.getElementById('submit-btn').style.display  = 'inline-block';
+  document.getElementById('next-btn').style.display    = 'none';
+  document.getElementById('next-btn').textContent = currentQ === 4 ? 'See Results →' : 'Next →';
+
+  updateDots();
+}
+
+// ── CALL MY SHOT ──
+function toggleShot() {
+  if (answered) return;
+  calledShot = !calledShot;
+
+  const shotBtn = document.getElementById('shot-btn');
+  const display = document.getElementById('movie-display');
+  const badge   = document.getElementById('called-badge');
+
+  if (calledShot) {
+    shotBtn.classList.add('called');
+    document.getElementById('shot-icon').textContent      = '🔥';
+    document.getElementById('shot-text-main').textContent = 'Shot Called — All In!';
+    document.getElementById('shot-text-sub').textContent  = 'Exact year = +300 pts. Any miss = −50 to −100 pts.';
+    display.classList.add('shot-active');
+    badge.classList.add('show');
+  } else {
+    shotBtn.classList.remove('called');
+    document.getElementById('shot-icon').textContent      = '🎯';
+    document.getElementById('shot-text-main').textContent = 'Call My Shot';
+    document.getElementById('shot-text-sub').textContent  = 'Confident? Triple your points — or lose 100 if you\'re wrong.';
+    display.classList.remove('shot-active');
+    badge.classList.remove('show');
+  }
+}
+
+// ── SUBMIT ──
+function submitGuess() {
+  if (answered) return;
+
+  const inp     = document.getElementById('year-input');
+  const guessed = parseInt(inp.value, 10);
+
+  if (isNaN(guessed) || guessed < 1900 || guessed > 2030) {
+    inp.style.borderColor = 'var(--coral)';
+    setTimeout(() => inp.style.borderColor = '', 500);
+    inp.focus();
+    return;
+  }
+
+  answered = true;
+  inp.disabled = true;
+  document.getElementById('shot-btn').disabled = true;
+
+  const movie = questions[currentQ];
+  const diff  = Math.abs(guessed - movie.year);
+  const pts   = calcPoints(diff, calledShot);
+  const fb    = getFeedback(diff, calledShot);
+
+  totalScore += pts;
+  history.push({ movie: movie.title, guessed, actual: movie.year, pts, called: calledShot });
+
+  // Determine input state
+  let inputState = fb.state;
+  if (calledShot && diff === 0) inputState = 'state-shot-win';
+  if (calledShot && diff > 0)   inputState = 'state-shot-loss';
+  inp.className = `year-input ${inputState}`;
+
+  // Feedback box
+  const box = document.getElementById('feedback-box');
+  box.className = `feedback-box show ${fb.state}`;
+
+  const shotTag = document.getElementById('fb-shot-tag');
+  if (fb.shotTag) {
+    shotTag.style.display = 'inline-block';
+    shotTag.textContent   = fb.shotTag.text;
+    shotTag.className     = `fb-shot-tag ${fb.shotTag.cls}`;
+  } else {
+    shotTag.style.display = 'none';
+  }
+
+  document.getElementById('fb-emoji').textContent = fb.emoji;
+  document.getElementById('fb-label').textContent = fb.label;
+  document.getElementById('fb-pts').textContent   = pts >= 0 ? `+${pts} points` : `${pts} points`;
+  document.getElementById('fb-year').textContent  = diff > 0 ? `The correct year was ${movie.year}.` : '';
+
+  document.getElementById('submit-btn').style.display = 'none';
+  document.getElementById('next-btn').style.display   = 'inline-block';
+  document.getElementById('current-score').textContent = totalScore;
+
+  // Celebration for exact year
+  if (diff === 0) triggerExactAnimation(calledShot);
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= 5) showResults();
+  else renderQuestion();
+}
+
+// ── RESULTS ──
+function ptsClass(p) {
+  if (p === 300) return 'p300';
+  if (p === 100) return 'p100';
+  if (p === 75)  return 'p75';
+  if (p === 50)  return 'p50';
+  if (p === 25)  return 'p25';
+  if (p === 0)   return 'p0';
+  return 'neg';
+}
+
+function showResults() {
+  const scoreEl = document.getElementById('final-score');
+  scoreEl.textContent = totalScore;
+  scoreEl.classList.toggle('negative', totalScore < 0);
+  document.getElementById('final-grade').textContent = gradeText(totalScore);
+
+  const bd = document.getElementById('results-breakdown');
+  bd.innerHTML = `
+    <div class="breakdown-head">
+      <span>Movie</span>
+      <span style="text-align:center;">Guess</span>
+      <span style="text-align:center;">Actual</span>
+      <span style="text-align:right;">Pts</span>
+    </div>`;
+
+  history.forEach(h => {
+    const row = document.createElement('div');
+    row.className = 'breakdown-row' + (h.called ? ' called-row' : '');
+    const ptsStr = h.pts >= 0 ? `+${h.pts}` : `${h.pts}`;
+    row.innerHTML = `
+      <div class="br-movie">${h.movie}</div>
+      <div class="br-guess">${h.guessed}</div>
+      <div class="br-actual">${h.actual}</div>
+      <div class="br-pts ${ptsClass(h.pts)}">
+        ${h.called ? '<span class="shot-pip"></span>' : ''}
+        ${ptsStr}
+      </div>`;
+    bd.appendChild(row);
+  });
+
+  showScreen('screen-results');
+  initShareButton();
+}
+
+function playAgain() { startGame(); }
+function goHome()    { showScreen('screen-welcome'); }
+
+// ── SHARE FEATURE ──
+
+const SHARE_QUIPS = [
+  { max: -1, pool: [
+    "I called my shot. My shot had other plans. 💀 Think you can beat a negative score?",
+    "Negative points. In a trivia game. I'm fine, really. Come try it.",
+    "The game broke me. Now it's your turn. 👀",
+  ]},
+  { max: 99, pool: [
+    "This game humbled me. Deeply. It will humble you too. 🎬",
+    "I survived the questions. My score didn't. Can you do worse?",
+    "Movie trivia is harder than it looks. Prove me wrong.",
+  ]},
+  { max: 249, pool: [
+    "I know my movies. Just not what year they came out. Apparently. 🍿 Beat me.",
+    "Some of these years really surprised me. A lot. Your problem now.",
+    "Not great. Definitely beatable. Let's see it. 🎞️",
+  ]},
+  { max: 374, pool: [
+    "Solid attempt. A few years caught me off guard. Think you'd do better? 👀",
+    "I held my own. Emphasis on 'held.' Can you do it cleaner?",
+    "Good-ish. Pretty sure you'd choke on the same ones I did. 🎯",
+  ]},
+  { max: 500, pool: [
+    "500/500. No shot-calling. Pure knowledge. Can you match it? 🎯",
+    "Every film, right year, no risks taken. Let's see yours.",
+    "Clean perfect score, no called shots. Coward or legend — you decide. 🔥",
+  ]},
+  { max: 899, pool: [
+    "Called my shots. Hit them. Film buff certified. Can you keep up? 🔥",
+    "Elite movie knowledge unlocked. Think you have it too? Prove it.",
+    "Shot called. Shot landed. Your turn not to embarrass yourself. 🎬",
+  ]},
+  { max: Infinity, pool: [
+    "Legendary score. I'm basically a walking IMDb. 🌟 Good luck topping this.",
+    "Film school pays off. Beat this if you can. (You can't.)",
+    "I don't watch movies. I memorize release dates. Step up. 🔥",
+  ]},
+];
+
+function getShareQuip(score) {
+  const tier = SHARE_QUIPS.find(t => score <= t.max) || SHARE_QUIPS[SHARE_QUIPS.length - 1];
+  return tier.pool[Math.floor(Math.random() * tier.pool.length)];
+}
+
+function eraDisplayLabel(era) {
+  return { all: '1975 – Today', early: 'VHS Era · 1975–1990', mid: 'DVD Era · 1990–2010', modern: 'Streaming Era · 2000–Today' }[era] || '';
+}
+
+async function buildShareImage(score, gradeStr) {
+  const W = 1080, H = 580;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+
+  await document.fonts.ready;
+
+  // Background
+  ctx.fillStyle = '#080c1a';
+  ctx.fillRect(0, 0, W, H);
+
+  // Radial glow
+  const grd = ctx.createRadialGradient(W / 2, H * 0.4, 0, W / 2, H * 0.4, W * 0.55);
+  grd.addColorStop(0,   'rgba(100,40,160,0.28)');
+  grd.addColorStop(0.5, 'rgba(232,66,78,0.12)');
+  grd.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, W, H);
+
+  // Outer border
+  ctx.strokeStyle = '#1d2545';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1, 1, W - 2, H - 2);
+
+  // Gold corner accents
+  ctx.strokeStyle = 'rgba(201,168,76,0.6)';
+  ctx.lineWidth = 3;
+  const C = 36, E = 22;
+  function corner(ax, ay, bx, by, cx2, cy2) {
+    ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.lineTo(cx2, cy2); ctx.stroke();
+  }
+  corner(E, E + C, E, E, E + C, E);
+  corner(W - E - C, E, W - E, E, W - E, E + C);
+  corner(E, H - E - C, E, H - E, E + C, H - E);
+  corner(W - E - C, H - E, W - E, H - E, W - E, H - E - C);
+
+  // RATE&SEE wordmark (tri-color)
+  ctx.textBaseline = 'alphabetic';
+  ctx.font = '800 54px "Barlow Condensed", sans-serif';
+  ctx.textAlign = 'left';
+  const rW = ctx.measureText('RATE').width;
+  const aW = ctx.measureText('&').width;
+  const sW = ctx.measureText('SEE').width;
+  const gap = 5;
+  let tx = (W - (rW + aW + sW + gap * 2)) / 2;
+  ctx.fillStyle = '#e8424e'; ctx.fillText('RATE', tx, 98); tx += rW + gap;
+  ctx.fillStyle = '#e8eaf2'; ctx.fillText('&',    tx, 98); tx += aW + gap;
+  ctx.fillStyle = '#e8424e'; ctx.fillText('SEE',  tx, 98);
+
+  // Subtitle
+  ctx.textAlign = 'center';
+  ctx.font      = 'italic 400 25px "Barlow", sans-serif';
+  ctx.fillStyle = '#6b7494';
+  ctx.fillText('What Year Was That?', W / 2, 134);
+
+  // Thin divider
+  ctx.strokeStyle = '#1d2545';
+  ctx.lineWidth   = 1;
+  ctx.beginPath(); ctx.moveTo(W * 0.28, 154); ctx.lineTo(W * 0.72, 154); ctx.stroke();
+
+  // Flames
+  ctx.textAlign = 'center';
+  ctx.font      = '30px sans-serif';
+  ctx.fillText('🔥 🔥 🔥 🔥 🔥', W / 2, 202);
+
+  // Score — big number
+  ctx.font        = '800 155px "Barlow Condensed", sans-serif';
+  ctx.fillStyle   = score < 0 ? '#f87171' : '#e8424e';
+  ctx.shadowColor = score < 0 ? 'rgba(248,113,113,0.45)' : 'rgba(232,66,78,0.6)';
+  ctx.shadowBlur  = 55;
+  ctx.fillText(score.toString(), W / 2, 370);
+  ctx.shadowBlur  = 0;
+
+  // "pts" label
+  ctx.font      = '600 26px "Barlow", sans-serif';
+  ctx.fillStyle = '#6b7494';
+  ctx.fillText('pts', W / 2, 402);
+
+  // Grade text — simple overflow guard
+  ctx.font      = 'italic 400 25px "Barlow", sans-serif';
+  ctx.fillStyle = '#c8cad8';
+  if (ctx.measureText(gradeStr).width > 820) {
+    // Split at a space near midpoint
+    const mid = Math.floor(gradeStr.length / 2);
+    const sp  = gradeStr.indexOf(' ', mid);
+    ctx.fillText(gradeStr.slice(0, sp),     W / 2, 445);
+    ctx.fillText(gradeStr.slice(sp + 1),    W / 2, 476);
+  } else {
+    ctx.fillText(gradeStr, W / 2, 454);
+  }
+
+  // Era label
+  ctx.font      = '700 18px "Barlow Condensed", sans-serif';
+  ctx.fillStyle = '#9aa0bc';
+  ctx.fillText(eraDisplayLabel(selectedEra).toUpperCase(), W / 2, 498);
+
+  // Bottom divider
+  ctx.strokeStyle = '#1d2545';
+  ctx.lineWidth   = 1;
+  ctx.beginPath(); ctx.moveTo(W * 0.32, 516); ctx.lineTo(W * 0.68, 516); ctx.stroke();
+
+  // rateandsee.com
+  ctx.font      = '600 19px "Barlow", sans-serif';
+  ctx.fillStyle = '#6b7494';
+  ctx.fillText('rateandsee.com', W / 2, 548);
+
+  return cv;
+}
+
+async function shareScore() {
+  const btn = document.getElementById('share-btn');
+  btn.disabled    = true;
+  btn.textContent = 'Building your card…';
+
+  try {
+    const quip   = getShareQuip(totalScore);
+    const grade  = document.getElementById('final-grade').textContent;
+    const canvas = await buildShareImage(totalScore, grade);
+    const blob   = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    const file   = new File([blob], 'rateandsee-score.png', { type: 'image/png' });
+
+    const shareData = {
+      title: 'What Year Was That? | Rate&See',
+      text:  quip + '\n\nPlay free → rateandsee.com 🎬',
+      files: [file],
+    };
+
+    if (navigator.canShare && navigator.canShare(shareData)) {
+      await navigator.share(shareData);
+    } else {
+      // Fallback: text only (still opens native share / SMS)
+      await navigator.share({ title: shareData.title, text: shareData.text });
+    }
+  } catch (err) {
+    if (err.name !== 'AbortError') console.warn('Share error:', err);
+  } finally {
+    btn.disabled  = false;
+    btn.innerHTML = 'Send Score via Text →';
+  }
+}
+
+function initShareButton() {
+  const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const canShare = typeof navigator.share === 'function';
+  const el       = document.getElementById('share-section');
+  if (el && isMobile && canShare) el.style.display = 'block';
+}
+
+// ── CELEBRATION ANIMATIONS ──
+function triggerExactAnimation(isShot) {
+  const display = document.getElementById('movie-display');
+
+  // Reset any previous animation class so it can re-fire
+  display.classList.remove('exact-hit', 'shot-win-hit');
+  void display.offsetWidth; // force reflow
+
+  if (isShot) {
+    display.classList.add('shot-win-hit');
+    // Screen flash overlay
+    const flash = document.createElement('div');
+    flash.className = 'shot-win-flash';
+    document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 1000);
+  } else {
+    display.classList.add('exact-hit');
+  }
+
+  spawnParticles(isShot);
+}
+
+function spawnParticles(isShot) {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;';
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  document.body.appendChild(canvas);
+
+  const ctx    = canvas.getContext('2d');
+  const cx     = window.innerWidth  * 0.5;
+  const cy     = window.innerHeight * 0.42;
+  const count  = isShot ? 115 : 55;
+
+  const stdColors  = ['#4ade80', '#86efac', '#22c55e', '#ffffff', '#a7f3d0'];
+  const shotColors = ['#f5c842', '#e2c97a', '#ffdf80', '#c9a84c', '#fff8e0',
+                      '#e8424e', '#ff6070', '#ff9f50', '#ffffff'];
+  const colors = isShot ? shotColors : stdColors;
+
+  const particles = [];
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = isShot ? (3 + Math.random() * 10) : (2 + Math.random() * 5.5);
+    particles.push({
+      x:        cx + (Math.random() - 0.5) * 90,
+      y:        cy + (Math.random() - 0.5) * 45,
+      vx:       Math.cos(angle) * speed,
+      vy:       Math.sin(angle) * speed + (isShot ? -3.5 : -1.5),
+      size:     isShot ? (3 + Math.random() * 8) : (2.5 + Math.random() * 5),
+      color:    colors[Math.floor(Math.random() * colors.length)],
+      alpha:    1,
+      decay:    isShot ? (0.007 + Math.random() * 0.012) : (0.012 + Math.random() * 0.018),
+      gravity:  isShot ? 0.17 : 0.14,
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.28,
+      shape:    (isShot && Math.random() > 0.42) ? 'star' : 'rect',
+    });
+  }
+
+  function drawStar(size) {
+    const pts = 5;
+    ctx.beginPath();
+    for (let i = 0; i < pts * 2; i++) {
+      const r     = i % 2 === 0 ? size : size * 0.4;
+      const theta = (i * Math.PI) / pts - Math.PI / 2;
+      if (i === 0) ctx.moveTo(Math.cos(theta) * r, Math.sin(theta) * r);
+      else         ctx.lineTo(Math.cos(theta) * r, Math.sin(theta) * r);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  let frameId;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let anyAlive = false;
+
+    for (const p of particles) {
+      if (p.alpha <= 0) continue;
+      anyAlive = true;
+      p.x  += p.vx;
+      p.y  += p.vy;
+      p.vy += p.gravity;
+      p.alpha    -= p.decay;
+      p.rotation += p.rotSpeed;
+
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.alpha);
+      ctx.fillStyle   = p.color;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation);
+
+      if (p.shape === 'star') {
+        drawStar(p.size);
+      } else {
+        // Confetti rectangle
+        ctx.fillRect(-p.size * 0.5, -p.size, p.size, p.size * 2.2);
+      }
+      ctx.restore();
+    }
+
+    if (anyAlive) {
+      frameId = requestAnimationFrame(animate);
+    } else {
+      cancelAnimationFrame(frameId);
+      canvas.remove();
+    }
+  }
+
+  frameId = requestAnimationFrame(animate);
+}
+
+// ── Enter key ──
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const next   = document.getElementById('next-btn');
+  const submit = document.getElementById('submit-btn');
+  if (next   && next.style.display   !== 'none') next.click();
+  else if (submit && submit.style.display !== 'none') submit.click();
+});
+</script>
+</body>
+</html>
